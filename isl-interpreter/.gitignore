@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Data & trained models — these get large fast, never commit them
+data/
+*.npy
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Secrets / environment config
+.env
+*.env.local
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
