@@ -24,6 +24,7 @@ import numpy as np
 import torch
 
 from capture import extract_landmarks, FEATURE_DIM
+from dataset import normalize_sequence
 from model import SignClassifier
 
 MODEL_PATH = Path("sign_classifier.pt")
@@ -98,7 +99,11 @@ def run_inference() -> None:
             frame_count += 1
 
             if frame_count % PREDICTION_INTERVAL == 0 and len(frame_buffer) == SEQUENCE_LENGTH:
-                sequence = np.array(frame_buffer)
+                # CRITICAL: apply the exact same normalization the model was
+                # trained with (see dataset.py). Feeding raw landmarks to a
+                # model trained on normalized ones produces garbage — the
+                # values are on a completely different scale.
+                sequence = normalize_sequence(np.array(frame_buffer))
                 input_tensor = torch.tensor(sequence, dtype=torch.float32).unsqueeze(0).to(device)
 
                 with torch.no_grad():
@@ -106,11 +111,24 @@ def run_inference() -> None:
                     probs = torch.softmax(logits, dim=1)
                     confidence, pred_idx = probs.max(dim=1)
 
-                if confidence.item() >= CONFIDENCE_THRESHOLD:
-                    word = idx_to_word[pred_idx.item()]
-                    last_prediction = f"{word} ({confidence.item():.0%})"
+                conf = confidence.item()
+                word = idx_to_word[pred_idx.item()]
 
-            cv2.putText(image, last_prediction, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+                # Always log to the console, even below threshold. Otherwise a
+                # model that's working-but-unsure looks identical to one that's
+                # completely broken.
+                print(f"  best guess: {word} ({conf:.0%})"
+                      f"{'' if conf >= CONFIDENCE_THRESHOLD else '  [below threshold, not shown]'}")
+
+                if conf >= CONFIDENCE_THRESHOLD:
+                    last_prediction = f"{word} ({conf:.0%})"
+
+            if len(frame_buffer) < SEQUENCE_LENGTH:
+                status = f"buffering {len(frame_buffer)}/{SEQUENCE_LENGTH}"
+                cv2.putText(image, status, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 200, 255), 2)
+            else:
+                cv2.putText(image, last_prediction or "(unsure)", (20, 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
             cv2.imshow("ISL Interpreter (press q to quit)", image)
 
             if cv2.waitKey(10) & 0xFF == ord("q"):
