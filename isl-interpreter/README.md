@@ -17,13 +17,6 @@ more honest) than an inflated claim.
 inference). What's missing is your actual video data — none of the scripts
 past `capture.py` will produce real results until you supply labeled clips.
 
-## Setup
-```bash
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python src/capture.py           # opens your webcam and overlays landmarks
-```
 
 ## Dataset: AI4Bharat INCLUDE
 
@@ -41,19 +34,6 @@ Note: these videos were shot in Chennai, Tamil Nadu. ISL varies across India,
 so a model trained on this won't generalize perfectly to signing from other
 regions — worth stating honestly rather than claiming universal ISL coverage.
 
-## Pipeline, in order
-```bash
-# 1. Reorganize INCLUDE's Category/"N. Word"/ layout into flat raw_videos/<word>/
-#    Defaults to a 5-word subset — get the loop working before scaling up.
-python src/organize_include.py --include-dir /path/to/INCLUDE
-#    Useful flags: --list (show all words), --words a b c, --all, --symlink
-
-python src/prepare_dataset.py   # extracts landmarks, builds manifest + labels
-
-python src/train.py             # trains on data/manifest.json, saves sign_classifier.pt
-
-python src/inference.py         # real-time webcam prediction using the trained model
-```
 
 ## Roadmap
 - [x] Live landmark extraction (MediaPipe Holistic)
