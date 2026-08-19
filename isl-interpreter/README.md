@@ -25,10 +25,29 @@ pip install -r requirements.txt
 python src/capture.py           # opens your webcam and overlays landmarks
 ```
 
+## Dataset: AI4Bharat INCLUDE
+
+This project trains on [INCLUDE](https://huggingface.co/datasets/ai4bharat/INCLUDE)
+(AI4Bharat, IIT Madras) — 4,287 videos across 263 ISL word signs. It's
+CC-BY-4.0 and freely downloadable, no access request needed.
+
+- **Metadata** (class labels, video paths, `include_50` flag) lives on Hugging Face.
+- **The videos themselves** live on Zenodo, record `4010759` — the HF dataset
+  card has a bash download script.
+- **INCLUDE-50** is a 50-word subset chosen across categories for faster
+  iteration, ~25 videos per word. Start here, not with the full 263.
+
+Note: these videos were shot in Chennai, Tamil Nadu. ISL varies across India,
+so a model trained on this won't generalize perfectly to signing from other
+regions — worth stating honestly rather than claiming universal ISL coverage.
+
 ## Pipeline, in order
 ```bash
-# 1. Organize labeled clips as data/raw_videos/<word>/<clip>.mp4
-#    (see the docstring in prepare_dataset.py)
+# 1. Reorganize INCLUDE's Category/"N. Word"/ layout into flat raw_videos/<word>/
+#    Defaults to a 5-word subset — get the loop working before scaling up.
+python src/organize_include.py --include-dir /path/to/INCLUDE
+#    Useful flags: --list (show all words), --words a b c, --all, --symlink
+
 python src/prepare_dataset.py   # extracts landmarks, builds manifest + labels
 
 python src/train.py             # trains on data/manifest.json, saves sign_classifier.pt
@@ -38,9 +57,11 @@ python src/inference.py         # real-time webcam prediction using the trained 
 
 ## Roadmap
 - [x] Live landmark extraction (MediaPipe Holistic)
-- [x] Dataset prep script (video clips → landmark manifest) — needs real clips to run
-- [x] Training script (loads manifest, saves best checkpoint) — needs a manifest to run
-- [x] Real-time inference script (webcam → prediction → text) — needs a trained model to run
+- [x] INCLUDE reorganizer (category tree → flat word folders, subset filtering)
+- [x] Dataset prep script (video clips → landmark manifest)
+- [x] Training script (loads manifest, saves best checkpoint)
+- [x] Real-time inference script (webcam → prediction → text)
+- [ ] Scale from the 5-word starter subset up to INCLUDE-50
 - [ ] Simple web frontend + WebSocket streaming
 - [ ] Stretch: rule-based/LLM cleanup of word sequences into natural sentences
 
@@ -50,10 +71,19 @@ isl-interpreter/
 ├── requirements.txt
 ├── src/
 │   ├── capture.py           # webcam -> landmarks (run this first, it works today)
+│   ├── organize_include.py  # INCLUDE's folder tree -> flat data/raw_videos/<word>/
 │   ├── prepare_dataset.py   # video clips -> landmark manifest + label vocabulary
 │   ├── model.py              # sequence classifier (LSTM)
 │   ├── dataset.py            # PyTorch Dataset for landmark sequences
 │   ├── train.py              # training loop (consumes prepare_dataset.py's output)
 │   └── inference.py          # real-time webcam -> prediction, using the trained model
 └── data/                      # gitignored — raw_videos/, landmarks/, manifest.json, labels.json go here
+```
+
+## Citation
+```
+Sridhar, A., Ganesan, R.G., Kumar, P., & Khapra, M. (2020).
+INCLUDE: A Large Scale Dataset for Indian Sign Language Recognition.
+Proceedings of the 28th ACM International Conference on Multimedia, 1366–1375.
+https://doi.org/10.1145/3394171.3413528
 ```

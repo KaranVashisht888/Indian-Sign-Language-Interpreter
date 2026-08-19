@@ -44,7 +44,7 @@ LANDMARK_DIR = Path("data/landmarks")
 MANIFEST_PATH = Path("data/manifest.json")
 LABELS_PATH = Path("data/labels.json")
 
-VIDEO_EXTENSIONS = ("*.mp4", "*.avi", "*.mov", "*.mkv")
+VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv"}
 
 
 def extract_landmarks_from_video(video_path: Path) -> np.ndarray:
@@ -86,7 +86,8 @@ def build_dataset() -> None:
         out_dir = LANDMARK_DIR / word
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        clips = sorted({p for ext in VIDEO_EXTENSIONS for p in word_dir.glob(ext)})
+        # Case-insensitive: INCLUDE ships uppercase .MOV / .MP4 filenames
+        clips = sorted(p for p in word_dir.iterdir() if p.suffix.lower() in VIDEO_EXTENSIONS)
         if not clips:
             print(f"Warning: no video clips found for '{word}', skipping.")
             continue
