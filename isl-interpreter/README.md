@@ -91,3 +91,6 @@ https://doi.org/10.1145/3394171.3413528
 
 
 Windows users should install torch from the CPU index to avoid the long-path issue
+
+
+noting that the project pins MediaPipe below 0.10.30 because the legacy Solutions API was removed, and that migrating to Tasks is future work.
