@@ -87,3 +87,8 @@ INCLUDE: A Large Scale Dataset for Indian Sign Language Recognition.
 Proceedings of the 28th ACM International Conference on Multimedia, 1366–1375.
 https://doi.org/10.1145/3394171.3413528
 ```
+
+## License
+Code is licensed under the [MIT License](LICENSE). The INCLUDE dataset itself
+is CC-BY-4.0 and is not redistributed here — see the citation above and the
+dataset's own terms on Hugging Face/Zenodo.
