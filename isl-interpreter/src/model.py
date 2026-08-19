@@ -16,8 +16,13 @@ import torch.nn as nn
 
 
 class SignClassifier(nn.Module):
-    def __init__(self, input_dim: int, hidden_dim: int = 128, num_layers: int = 2,
-                 num_classes: int = 50, dropout: float = 0.3):
+    def __init__(self, input_dim: int, hidden_dim: int = 64, num_layers: int = 1,
+                 num_classes: int = 50, dropout: float = 0.4):
+        # Defaults are deliberately small. A 2-layer, 128-unit bidirectional
+        # LSTM has ~500k parameters — vastly more capacity than ~80 training
+        # samples can constrain, so it memorizes instead of generalizing.
+        # Scale hidden_dim and num_layers back up once you have real data
+        # volume (INCLUDE-50 territory and beyond).
         super().__init__()
         self.lstm = nn.LSTM(
             input_size=input_dim,
